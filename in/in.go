@@ -26,14 +26,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = DoIn(destination, os.Stdin)
+	err = DoIn(destination, os.Stdin, os.Stdout)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 }
 
-func DoIn(destination string, in io.Reader) error {
+func DoIn(destination string, in io.Reader, out io.Writer) error {
 	var request models.CheckRequest
 	err := json.NewDecoder(in).Decode(&request)
 	if err != nil {
@@ -60,6 +60,13 @@ func DoIn(destination string, in io.Reader) error {
 	err = ioutil.WriteFile(
 		fmt.Sprintf("%v/%v", destination, filename), bodyBytes, 0755,
 	)
+	if err != nil {
+		return err
+	}
+
+	err = json.NewEncoder(out).Encode(models.InResponse{
+		Version: request.Version,
+	})
 
 	return err
 }

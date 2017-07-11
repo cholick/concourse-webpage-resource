@@ -1,4 +1,8 @@
 
+## concourwe-webpage-resources
+
+See `sample_pipeline.yml` for an example.
+
 ## Development
 
 ```bash

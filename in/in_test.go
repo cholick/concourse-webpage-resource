@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -16,18 +17,21 @@ import (
 
 var _ = Describe("In Test", func() {
 	var tempDir string
+	var out *bytes.Buffer
 
 	BeforeEach(func() {
 		var err error
 		tempDir, err = ioutil.TempDir("", "")
 		Expect(err).To(BeNil())
+
+		out = bytes.NewBuffer(nil)
 	})
 
 	AfterEach(func() {
 		os.RemoveAll(tempDir)
 	})
 
-	It("writes out output", func() {
+	It("writes file out to disk", func() {
 		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("some content"))
 		})
@@ -39,13 +43,40 @@ var _ = Describe("In Test", func() {
 
 		var err error
 		go func() {
-			err = DoIn(tempDir, in)
+			err = DoIn(tempDir, in, out)
 		}()
 
 		Eventually(func() string {
 			fileBytes, _ := ioutil.ReadFile(fmt.Sprintf("%v/out.txt", tempDir))
 			return string(fileBytes)
 		}).Should(Equal("some content"))
+		Expect(err).To(BeNil())
+	})
+
+	It("writes output", func() {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("some content"))
+		})
+		server := httptest.NewServer(handler)
+		defer server.Close()
+
+		request := fmt.Sprintf(`{
+			"source": {
+				"url": "%s",
+				"filename": "out.txt"
+			},
+			"version": {"eTag":"42"}
+		}`, server.URL)
+		in := strings.NewReader(request)
+
+		var err error
+		go func() {
+			err = DoIn(tempDir, in, out)
+		}()
+
+		Eventually(func() string {
+			return strings.TrimSpace(string(out.Bytes()))
+		}).Should(Equal(`{"version":{"eTag":"42"}}`))
 		Expect(err).To(BeNil())
 	})
 
@@ -61,7 +92,7 @@ var _ = Describe("In Test", func() {
 
 		var err error
 		go func() {
-			err = DoIn(tempDir, in)
+			err = DoIn(tempDir, in, out)
 		}()
 
 		Eventually(func() error {
@@ -74,7 +105,7 @@ var _ = Describe("In Test", func() {
 
 		var err error
 		go func() {
-			err = DoIn(tempDir, in)
+			err = DoIn(tempDir, in, out)
 		}()
 
 		Eventually(func() error {
@@ -88,7 +119,7 @@ var _ = Describe("In Test", func() {
 
 		var err error
 		go func() {
-			err = DoIn(tempDir, in)
+			err = DoIn(tempDir, in, out)
 		}()
 
 		Eventually(func() error {

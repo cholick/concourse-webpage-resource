@@ -15,6 +15,12 @@ import (
 
 var _ = Describe("Check Test", func() {
 	Context("when executed", func() {
+		var out *bytes.Buffer
+
+		BeforeEach(func() {
+			out = bytes.NewBuffer(nil)
+		})
+
 		It("should return initial value if none present", func() {
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				header := w.Header()
@@ -24,7 +30,6 @@ var _ = Describe("Check Test", func() {
 			server := httptest.NewServer(handler)
 			defer server.Close()
 
-			out := bytes.NewBuffer(nil)
 			request := fmt.Sprintf(`{"source": {"url": "%s"}}`, server.URL)
 			in := strings.NewReader(request)
 
@@ -47,7 +52,6 @@ var _ = Describe("Check Test", func() {
 			server := httptest.NewServer(handler)
 			defer server.Close()
 
-			out := bytes.NewBuffer(nil)
 			request := fmt.Sprintf(`{
 				"source": {"url": "%s"},
 				"version": {
@@ -69,7 +73,6 @@ var _ = Describe("Check Test", func() {
 		})
 
 		It("returns error on bad request", func() {
-			out := bytes.NewBuffer(nil)
 			request := fmt.Sprintf("totally not json")
 			in := strings.NewReader(request)
 
@@ -90,7 +93,6 @@ var _ = Describe("Check Test", func() {
 			server := httptest.NewServer(handler)
 			defer server.Close()
 
-			out := bytes.NewBuffer(nil)
 			request := fmt.Sprintf(`{"source": {"url": "%s"}}`, server.URL)
 			in := strings.NewReader(request)
 

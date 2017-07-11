@@ -1,0 +1,39 @@
+---
+
+resource_types:
+- name: webpage
+  type: docker-image
+  source:
+    repository: cholick/concourse-webpage-resource
+    tag: latest
+
+resources:
+- name: faq
+  type: webpage
+  source:
+    filename: faq.html
+    url: https://www.apache.org/foundation/preFAQ.html
+
+jobs:
+- name: demo-resource
+  plan:
+  - get: faq
+    trigger: true
+  - task: show-faq
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: cholick/concourse-webpage-resource
+          tag: latest
+      inputs:
+      - name: faq
+      run:
+        path: bash
+        args:
+        - -exc
+        - |
+          echo "Running demo pipeline"
+          ls
+          cat faq/faq.html

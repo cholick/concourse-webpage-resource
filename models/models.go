@@ -14,3 +14,7 @@ type CheckRequest struct {
 	Source  Source  `json:"source"`
 	Version Version `json:"version"`
 }
+
+type InResponse struct {
+	Version Version `json:"version"`
+}
