@@ -70,7 +70,7 @@ var _ = Describe("Check Test", func() {
 
 		It("returns error on bad request", func() {
 			out := bytes.NewBuffer(nil)
-			request := fmt.Sprintf("not json")
+			request := fmt.Sprintf("totally not json")
 			in := strings.NewReader(request)
 
 			var err error

@@ -7,21 +7,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/cholick/concourse-webpage-resource/models"
 )
-
-type Source struct {
-	Url string `json:"url"`
-}
-
-type Version struct {
-	ETag         string `json:"eTag,omitempty"`
-	LastModified string `json:"lastModified,omitempty"`
-}
-
-type CheckRequest struct {
-	Source  Source  `json:"source"`
-	Version Version `json:"version"`
-}
 
 func main() {
 	err := DoCheck(os.Stdin, os.Stdout)
@@ -32,12 +20,12 @@ func main() {
 }
 
 func DoCheck(in io.Reader, out io.Writer) error {
-	var request CheckRequest
+	var request models.CheckRequest
 	err := json.NewDecoder(in).Decode(&request)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error unmarshalling input: %v", err.Error()))
 	}
-	versions := []Version{}
+	versions := []models.Version{}
 
 	resp, err := http.Head(request.Source.Url)
 	if err != nil {
@@ -47,7 +35,7 @@ func DoCheck(in io.Reader, out io.Writer) error {
 		return errors.New(fmt.Sprintf("Non-OK response from server: %v", resp.StatusCode))
 	}
 
-	currentVersion := Version{}
+	currentVersion := models.Version{}
 	eTag := resp.Header[http.CanonicalHeaderKey("ETag")]
 	if len(eTag) > 0 {
 		currentVersion.ETag = eTag[0]
